@@ -1,7 +1,6 @@
 ---
 title: "Homework 1"
 author: "Xinran Ren,\ 3220103492"
-institute: "School of Mathematical Sciences, Zhejiang University"
 date: "2025/06/26"
 output:
   pdf_document: default
@@ -9,7 +8,7 @@ output:
     df_print: paged
 ---
 
-```{r setup, message=FALSE, include=FALSE}
+```{r setup, message = F, include=FALSE}
 options(htmltools.dir.version = FALSE)
 library(tidyverse)
 library(DAAG)
@@ -35,8 +34,6 @@ library(DAAG)
     c.  What are the names of the columns of `iowa.df`?
 
         ```{r}
-        names(iowa.df)
-        # or
         colnames(iowa.df)
         ```
 
@@ -61,9 +58,17 @@ sort(vector1)
 sum(vector1)
 ```
 
-```         
-b. For the next series of commands, either explain their results, or why they should produce errors.
-```
+-   `max(vector1)`:
+    -   Result: `"7"`
+    -   Explanation: While the elements appear numeric, they're stored as character strings. R performs lexicographical comparison: Compares first characters: '7' \> '5' \> '3' \> '1'. Thus `"7"` is considered the "maximum" string
+-   `sort(vector1)`:
+    -   Result: `"12" "32" "5"  "7"`
+    -   Explanation: Character strings are sorted alphabetically by Unicode values: '1' (ASCII 49) \< '3' (51) \< '5' (53) \< '7' (55) Note this differs from numerical sorting (which would be 5,7,12,32)
+-   `sum(vector1)`:
+    -   Error in sum(vector1) : invalid 'type' (character) of argument
+    -   Explanation: The sum() function requires numeric input. No implicit type conversion occurs, unlike some other languages.
+
+b.  For the next series of commands, either explain their results, or why they should produce errors.
 
 ```         
 vector2 <- c("5",7,12)
@@ -77,21 +82,118 @@ list4[[2]]+list4[[4]]
 list4[2]+list4[4]
 ```
 
+-   `vector2[2] + vector2[3]`:
+    -   Result: Error in vector2[2] + vector2[3] : non-numeric argument to binary operator
+    -   Explanation: We created a character vector through coercion (all elements become strings) so the actual stored values: c("5", "7", "12"). We're trying to add two character strings "7" + "12"
+-   `dataframe3[1,2] + dataframe3[1,3]`:
+    -   Result: `19`
+    -   Works because: Data frames maintain column types z2 and z3 remain numeric despite z1 being character. We're extracting values, not columns
+-   `list4[[2]]+list4[[4]]`:
+    -   Result: `168`
+    -   Works because: [[ ]] extracts actual numeric values (42 + 126). List elements maintain their original types
+-   `list4[2]+list4[4]`:
+    -   Result: Error in list4[2] + list4[4] : non-numeric argument to binary operator
+    -   Error because: [ ] returns sublists (not the actual values). We're trying to add list(42) + list(126)
+
 3.  Working with functions and operators.
     a.  The colon operator will create a sequence of integers in order. It is a special case of the function `seq()` which you saw earlier in this assignment. Using the help command `?seq` to learn about the function, design an expression that will give you the sequence of numbers from 1 to 10000 in increments of 372. Design another that will give you a sequence between 1 and 10000 that is exactly 50 numbers in length.
+
+        ```{r}
+        ?seq
+        seq(from = 1, to = 10000, by = 372)
+        seq(from = 1, to = 10000, length.out = 50)
+        ```
+
     b.  The function `rep()` repeats a vector some number of times. Explain the difference between `rep(1:3, times=3)` and `rep(1:3, each=3)`.
 
-MB.Ch1.2. The orings data frame gives data on the damage that had occurred in US space shuttle launches prior to the disastrous Challenger launch of 28 January 1986. The observations in rows 1, 2, 4, 11, 13, and 18 were included in the pre-launch charts used in deciding whether to proceed with the launch, while remaining rows were omitted.
+        -   `rep(1:3, times=3)`:
 
-Create a new data frame by extracting these rows from orings, and plot total incidents against temperature for this new data frame. Obtain a similar plot for the full data set.
+            -   Repeats the **entire vector** `1:3` three times.
+
+            -   Output: 1 2 3 1 2 3 1 2 3
+
+            -   The sequence `1, 2, 3` is repeated back-to-back three times.
+
+        -   `rep(1:3, each=3)`:
+
+            -   Repeats **each element** of the vector three times before moving to the next element.
+
+            -   Output: 1 1 1 2 2 2 3 3 3
+
+            -   Each number (`1`, then `2`, then `3`) is repeated three times consecutively.
+
+        -   **Summary:**
+
+            -   `times` repeats the whole vector.
+
+            -   `each` repeats each element individually before moving to the next.
+
+MB.Ch1.2. The `orings` data frame gives data on the damage that had occurred in US space shuttle launches prior to the disastrous Challenger launch of 28 January 1986. The observations in rows 1, 2, 4, 11, 13, and 18 were included in the pre-launch charts used in deciding whether to proceed with the launch, while remaining rows were omitted.
+
+Create a new data frame by extracting these rows from `orings`, and plot total incidents against temperature for this new data frame. Obtain a similar plot for the full data set.
+
+```{r}
+# Create a new data frame by extracting these rows from orings
+library(DAAG)
+selected_rows <- c(1, 2, 4, 11, 13, 18)
+orings_subset <- orings[selected_rows, ]
+
+# Plot total incidents against temperature for this new data frame
+plot(orings_subset$Temperature, orings_subset$Total,
+     xlab = "Temperature (F)", ylab = "Total Incidents",
+     main = "O-Ring Damage(New Data Frame)",
+     pch = 19, col = "red")
+
+# Obtain a similar plot for the full data set
+plot(orings$Temperature, orings$Total,
+     xlab = "Temperature (F)", ylab = "Total Incidents",
+     main = "O-Ring Damage (Full Data Set)",
+     pch = 19, col = "blue")
+```
 
 MB.Ch1.4. For the data frame `ais` (DAAG package)
 
-(a) Use the function `str()` to get information on each of the columns. Determine whether any of the columns hold missing values.
+a.  Use the function `str()` to get information on each of the columns. Determine whether any of the columns hold missing values.
 
-(b) Make a table that shows the numbers of males and females for each different sport. In which sports is there a large imbalance (e.g., by a factor of more than 2:1) in the numbers of the two sexes?
+    ```{r}
+    # Load the DAAG package
+    library(DAAG)
 
-MB.Ch1.6.Create a data frame called Manitoba.lakes that contains the lake's elevation (in meters above sea level) and area (in square kilometers) as listed below. Assign the names of the lakes using the `row.names()` function.
+    # Load the ais dataset
+    data(ais)
+
+    # Get the structure of the ais data frame
+    str(ais)
+
+    # Check for missing values in each column
+    colSums(is.na(ais))
+    ```
+
+b.  Make a table that shows the numbers of males and females for each different sport. In which sports is there a large imbalance (e.g., by a factor of more than 2:1) in the numbers of the two sexes?
+
+    ```{r}
+    # Load the data
+    library(DAAG)
+    data(ais)
+
+    # Create the table of counts
+    sex_by_sport <- table(ais$sport, ais$sex)
+    print(sex_by_sport)
+
+    # Find sports with >2:1 gender imbalance
+    imbalance <- sex_by_sport[, "f"] / sex_by_sport[, "m"]  # female:male ratio
+
+    # Sports where females outnumber males by >2:1
+    female_dominant <- names(which(imbalance > 2))
+
+    # Sports where males outnumber females by >2:1
+    male_dominant <- names(which(imbalance < 0.5))
+
+    cat("\nSports with female > 2 male:", female_dominant)
+    cat("\nSports with male > 2 female:", male_dominant)
+    ```
+
+MB.Ch1.6.Create a data frame called `Manitoba.lakes` that contains the lake's `elevation` (in meters above sea level) and `area` (in square kilometers) as listed below. Assign the names of the lakes using the `row.names()` function.
 
 ```{=latex}
 \begin{table}[h!]
@@ -112,7 +214,23 @@ Playgreen       &    217    & 657 \\\hline
 \end{table}
 ```
 
-(a) Use the following code to plot `log2(area)` versus elevation, adding labeling information (there is an extreme value of area that makes a logarithmic scale pretty much essential):
+```{r}
+# Create the data frame
+Manitoba.lakes <- data.frame(
+  elevation = c(217, 254, 248, 254, 253, 227, 178, 207, 217),
+  area = c(24387, 5374, 4624, 2247, 1353, 1223, 1151, 755, 657)
+)
+
+# Set row names (lake names)
+row.names(Manitoba.lakes) <- c("Winnipeg", "Winnipegosis", "Manitoba", 
+                              "SouthernIndian", "Cedar", "Island", 
+                              "Gods", "Cross", "Playgreen")
+
+# Display the result
+Manitoba.lakes
+```
+
+(a) Use the following code to plot `log2(area)` versus `elevation`, adding labeling information (there is an extreme value of area that makes a logarithmic scale pretty much essential):
 
 ```{r}
 attach(Manitoba.lakes)
@@ -124,6 +242,14 @@ title("Manitoba's Largest Lakes")
 ```
 
 Devise captions that explain the labeling on the points and on the y-axis. It will be necessary to explain how distances on the scale relate to changes in area.
+
+-   Here are explanatory captions for the plot:
+
+    -   **Y-axis caption**: "The y-axis shows log2(area), where each unit increase represents a doubling of lake area. For example, Winnipeg (log2(area) \~ 14.6) has approximately 2\^(14.6-13.4) \~ 2.3 times the area of Winnipegosis (log2(area) \~ 13.4)."
+
+    -   **Point labeling caption**: "Lake names are shown to the right of each point, while actual area values (in km²) appear to the left. The logarithmic transformation compresses the wide range of areas (657-24,387 km²) into a manageable scale where Winnipeg appears as an extreme outlier."
+
+    -   **Scale relationship explanation**: "Vertical distances on this plot correspond to ratios of areas. Moving up by 1 unit means an area is twice as large, while moving down by 1 unit means an area is half as large. The 15-unit range on the y-axis reflects that Winnipeg's area is about 2\^15 \~ 32,000 times larger than the smallest lake's area."
 
 (b) Repeat the plot and associated labeling, now plotting area versus elevation, but specifying `ylog=TRUE` in order to obtain a logarithmic y-scale.
 
@@ -138,7 +264,31 @@ title("Manitoba's Largest Lakes")
 MB.Ch1.7. Look up the help page for the R function `dotchart()`. Use this function to display the areas of the Manitoba lakes (a) on a linear scale, and (b) on a logarithmic scale. Add, in each case, suitable labeling information.
 
 ```{r}
-dotchart(log2(area))
+# (a) Linear scale dotchart
+dotchart(Manitoba.lakes$area,
+         labels = rownames(Manitoba.lakes),
+         main = "Surface Areas of Manitoba Lakes (Linear Scale)",
+         xlab = "Area (square kilometers)",
+         pch = 16,
+         color = "darkblue")
+
+# (b) Logarithmic scale dotchart (preserving default axis)
+dotchart(log2(Manitoba.lakes$area),
+         labels = rownames(Manitoba.lakes),
+         main = "Surface Areas of Manitoba Lakes (Logarithmic Scale)",
+         xlab = expression(log[2]~"(Area in km²)"),
+         pch = 17,
+         color = "darkred")
 ```
 
 MB.Ch1.8. Using the `sum()` function, obtain a lower bound for the area of Manitoba covered by water.
+
+```{r}
+# Calculate lower bound for water coverage
+water_area_lower_bound <- sum(Manitoba.lakes$area)
+
+# Print the result with proper formatting
+cat("Lower bound for Manitoba's water coverage (major lakes only):", 
+    format(water_area_lower_bound, big.mark = ","), 
+    "square kilometers\n")
+```
