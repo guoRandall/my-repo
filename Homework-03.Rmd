@@ -1,6 +1,11 @@
 ---
 title: "Homework 3: The Death and Life of Great American City Scaling Laws"
+author: "Xinran Ren,\ 3220103492"
+date: "2025/06/28"
 output: pdf_document
+header-includes:
+  - \usepackage{setspace}
+  - \onehalfspacing
 ---
 
 **Background**: In the previous lectures and lab, we fitted the following model
