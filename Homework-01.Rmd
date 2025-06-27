@@ -245,7 +245,7 @@ Devise captions that explain the labeling on the points and on the y-axis. It wi
 
 -   Here are explanatory captions for the plot:
 
-    -   **Y-axis caption**: "The y-axis shows log2(area), where each unit increase represents a doubling of lake area. For example, Winnipeg (log2(area) \~ 14.6) has approximately 2\^(14.6-13.4) \~ 2.3 times the area of Winnipegosis (log2(area) \~ 13.4)."
+    -   **Y-axis caption**: "The y-axis shows log2(area), where each unit increase represents a doubling of lake area. For example, Winnipeg (log2(area) $\approx$ 14.6) has approximately $2^{(14.6-13.4)}\approx$ $2.3$ times the area of Winnipegosis (log2(area) $\approx$ 13.4)."
 
     -   **Point labeling caption**: "Lake names are shown to the right of each point, while actual area values (in km²) appear to the left. The logarithmic transformation compresses the wide range of areas (657-24,387 km²) into a manageable scale where Winnipeg appears as an extreme outlier."
 

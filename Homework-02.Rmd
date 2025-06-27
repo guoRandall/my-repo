@@ -22,7 +22,7 @@ colSums(apply(ca_pa,c(1,2),is.na))
     d. The function `na.omit()` takes a dataframe and returns a new dataframe, omitting any row containing an NA value.  Use it to purge the data set of rows with incomplete data.
     e. How many rows did this eliminate?
     f. Are your answers in (c) and (e) compatible? Explain.
-
+> "ss"
 2. _This Very New House_  
     a. The variable `Built_2005_or_later` indicates the percentage of houses in each Census tract built since 2005.  Plot median house prices against this variable.
     b. Make a new plot, or pair of plots, which breaks this out by state.  Note that the state is recorded in the `STATEFP` variable, with California being state 6 and Pennsylvania state 42.
