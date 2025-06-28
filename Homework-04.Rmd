@@ -1,6 +1,11 @@
 ---
 title: "Homework 4: Diffusion of Tetracycline"
+author: "Xinran Ren,\ 3220103492"
+date: "2025/06/29"
 output: pdf_document
+header-includes:
+  - \usepackage{setspace}
+  - \onehalfspacing
 ---
 
 We continue examining the diffusion of tetracycline among doctors in Illinois in the early 1950s, building on our work in lab 6.  You will need the data sets `ckm_nodes.csv` and `ckm_network.dat` from the labs.

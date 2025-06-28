@@ -71,4 +71,36 @@ gapminder |>
   group_by(continent) |>
   mutate(cont_pop = sum(pop))
 ```
+```{r}
+gapminder |>
+  group_by(continent) |>
+  summarize(cont_pop = sum(pop)) |>
+  ungroup() # summarize() will actually only keep the columns that are grouped_by or summarized. So if we wanted to keep other columns, we’d have to do have a few more steps. ungroup() removes the grouping and it’s good to get in the habit of using it after a group_by().
+```
+```{r}
+gapminder |>
+  group_by(continent, year) |>
+  summarize(cont_pop = sum(pop))
+```
+
+```{r}
+gapminder |>
+  group_by(continent, year) |>
+  summarize(cont_pop = sum(pop)) |>
+  arrange(year)
+```
+## How to make data tidy?
+```{r}
+## wide format
+gap_wide <- readr::read_csv('data/gapminder_wide.csv')
+gapminder <- readr::read_csv('data/gapminder.csv')
+```
+```{r}
+head(gap_wide)
+#str(gap_wide)
+```
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = class))
+```
 
