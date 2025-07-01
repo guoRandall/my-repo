@@ -46,15 +46,16 @@ gmp$pop <- round(gmp$gmp/gmp$pcgmp)
 gmp <- read.table("data/gmp.dat")
 gmp$pop <- round(gmp$gmp / gmp$pcgmp)
 
-gmp = gmp |>  mutate(a_0.125 = 5000*pop^0.125, a_0.1 = 5000*pop^0.1, a_0.15 = 5000*pop^0.15)
-gmp |>  ggplot() +
-  geom_point(aes(pop, pcgmp), color = "#0000FF80") +
-  geom_line(aes(pop, a_0.125), color = "#FF5733", linewidth = 1) +
-  geom_line(aes(pop, a_0.1), color = "#33FF57", linewidth = 1) +
-  geom_line(aes(pop, a_0.15), color = "#643785", linewidth = 1) +
-  theme_minimal() +
-  labs(x = "Population", y = "Per Capita GMP", title = "GMP vs. Population with Scaling Curves") +
-  scale_x_log10()
+gmp <- gmp |> mutate(pop = gmp/pcgmp, nlmfit_125 = 6611*pop^(1/8), 
+                     nlmfit_100 = 6611*pop^(0.1), nlmfit_150 = 6611*pop^(0.15)) 
+gmp |> ggplot() + geom_point(aes(x = pop, y = pcgmp), color = "#0000FF80")+
+  labs(x = "Population", y = "Per-Capita Economic Output ($/person-year)",
+  title = "US Metropolitan Areas, 2006")+
+  scale_x_log10()+
+  geom_line(aes(x = pop, y = nlmfit_125), col = '#FF5733', linewidth = 1.5) +
+  geom_line(aes(x = pop, y = nlmfit_100), col = '#33FF57', linewidth = 1.5) +
+  geom_line(aes(x = pop, y = nlmfit_150), col = '#643785', linewidth = 1.5) +
+  theme_minimal()
 ```
 
 2.  Write a function, called `mse()`, which calculates the mean squared error of the model on a given data set. `mse()` should take three arguments: a numeric vector of length two, the first component standing for $y_0$ and the second for $a$; a numerical vector containing the values of $N$; and a numerical vector containing the values of $Y$. The function should return a single numerical value. The latter two arguments should have as the default values the columns `pop` and `pcgmp` (respectively) from the `gmp` data frame from lecture. Your function may not use `for()` or any other loop. Check that, with the default data, you get the following values.

@@ -1,9 +1,13 @@
 ---
+subtitle: "2025暑假短学期《数学实践》"
 title: "Homework 4: Diffusion of Tetracycline"
-author: "Xinran Ren,\ 3220103492"
+author: "任心然,\ 3220103492"
 date: "2025/06/29"
-output: pdf_document
+output:
+  pdf_document:
+    latex_engine: xelatex
 header-includes:
+  - \usepackage{ctex}
   - \usepackage{setspace}
   - \onehalfspacing
 ---
@@ -20,10 +24,40 @@ ckm_network <- read.table('data/ckm_network.dat')
 ckm_network <- ckm_network[-noinfor, -noinfor]
 ```
 
+```{r}
+head(ckm_nodes)
+```
+
+```{r, eval=F}
+head(ckm_network)
+```
+
 2. Create a new data frame which records, for every doctor, for every month, whether that doctor began prescribing tetracycline that month, whether they had adopted tetracycline before that month, the number of their contacts who began prescribing strictly _before_ that month, and the number of their contacts who began prescribing in that month or earlier.  Explain why the dataframe should have 6 columns, and 2125 rows. 
 ```{r}
+df <- data.frame(doctor = rownames(ckm_nodes)) |> 
+  slice(rep(1:n(),each = 17)) |> 
+  mutate(month = rep(1 : 17 , length.out = n())) |> 
+  mutate(begin = as.numeric(ckm_nodes[doctor, 2] == month)) |>  
+  mutate(done = as.numeric(ckm_nodes[doctor, 2] < month))
 
+countsum1 <- function(x){
+    return(sum( ckm_nodes[ckm_network[as.numeric(x[1])] == 1, 2] < as.numeric(x[2])))
+}
+df <- df |>  mutate(contacts_prescribed_before = apply(df, 1, countsum1))
+
+countsum2 <- function(x){
+  return(sum(ckm_nodes[ckm_network[as.numeric(x[1])] == 1, 2] <= as.numeric(x[2])))
+}
+df <- df |>  mutate(contacts_prescribed_now_before = apply(df,1,countsum2))
 ```
+```{r}
+# Verify the dimensions of the data frame
+nrow(df)  # Should be 2125 (125 doctors * 17 months)
+ncol(df)  # Should be 6
+```
+
+- There are six variables so it has 6 columns;
+- There are 125 doctors and 17 months, so it has 125 * 17 = 2125 rows.
 
 3.  Let
 
@@ -51,31 +85,99 @@ and
   
   a. Explain why there should be no more than $21$ values of $k$ for which we can estimate $p_k$ and $q_k$ directly from the data.
 ```{r}
-
+max(apply(ckm_network, 1, sum))
 ```
   b. Create a vector of estimated $p_k$ probabilities, using the data frame from (2).  Plot the probabilities against the number of prior-adoptee contacts $k$.
 ```{r}
-
+library(latex2exp)
+pk.estimated <- numeric(21)
+for (k in 0:20){
+    df_select_k <- df |>  filter(contacts_prescribed_before == k) 
+    if (nrow(df_select_k) == 0){
+      pk.estimated[k] <- 0
+    }
+    else {
+      pk.month = 0
+      for (i in 1:17){
+        df_select_k_month <- df_select_k |>  filter(month == i)
+        pk.month <- pk.month + (sum(df_select_k_month[,3]) > 0)
+      }
+      pk.estimated[k] <- pk.month/17
+    }
+}
+plot(0 : 20, pk.estimated,
+     xlab = "k: Number of doctor's contacts prescribing before this month", 
+     ylab = TeX("$p_k$"),
+     main = TeX("$p_k$ against the number of prior-adoptee contacts k"), 
+     pch = 16, col = "salmon")
 ```
+
   c. Create a vector of estimated $q_k$ probabilities, using the data frame from (2). Plot the probabilities against the number of prior-or-contemporary-adoptee contacts $k$.
 ```{r}
-
+qk.estimated <- numeric(21)
+for (k in 0 : 20){
+  df_select_qk <- df |>  filter(contacts_prescribed_now_before == k)
+  if (nrow(df_select_qk) == 0){
+    qk.estimated[k] <- 0
+  }
+  else{
+    qk.month <- 0
+    for (i in 1 : 17){
+      df_select_qk_month <- df_select_qk |>  filter(month == i)
+      qk.month <- qk.month + (sum(df_select_qk_month[, 3]) > 0)
+    }
+    qk.estimated[k] <- qk.month / 17
+  }
+}
+plot(0 : 20, qk.estimated,
+     xlab = "k: Number of doctor's contacts prescribing this month", 
+     ylab = TeX("$q_k$"),
+     main = TeX("$q_k$ against the number of prior-or-contemporary-adoptee contacts k"),
+     pch = 16, col = "steelblue")
 ```
 
 4. Because it only conditions on information from the previous month, $p_k$ is a little easier to interpret than $q_k$.  It is the probability per month that a doctor adopts tetracycline, if they have exactly $k$ contacts who had already adopted tetracycline.
   a. Suppose $p_k = a + bk$.  This would mean that each friend who adopts the new drug increases the probability of adoption by an equal amount.  Estimate this model by least squares, using the values you constructed in (3b).  Report the parameter estimates.
 ```{r}
-
+K <- 0:20
+df.pk <- data.frame(pk = pk.estimated, K = 0:20)
+lm.p <- lm(pk.estimated ~ K, data = df.pk)
+summary(lm.p)
 ```
+  - Parameter estimates: $\hat{a}$ = 0.349885, $\hat{b}$ = -0.024064.
   b. Suppose $p_k = e^{a+bk}/(1+e^{a+bk})$.  Explain, in words, what this model would imply about the impact of adding one more adoptee friend on a given doctor's probability of adoption.  (You can suppose that $b > 0$, if that makes it easier.)  Estimate the model by least squares, using the values you constructed in (3b).
-
+  - Explanation: Suppose $b > 0$. As $k$ grows, the initial phase exhibits near-exponential (geometric) growth. Upon approaching saturation, the growth transitions to linear (arithmetic) scaling before finally stabilizing at maturity.
 ```{r}
-
+nls.p = nls(pk.estimated ~ exp(a+b*K)/(1+exp(a+b*K)), 
+            start = list(a = 0, b = 0.1), data = df.pk)
+summary(nls.p)
 ```
+  - Estimates: $\hat{a}$ = 0.69207, $\hat{b}$ = -0.53926.
   c. Plot the values from (3b) along with the estimated curves from (4a) and (4b).  (You should have one plot, with $k$ on the horizontal axis, and probabilities on the vertical axis .)  Which model do you prefer, and why?
-
 ```{r}
+a.linear <- 0.349885
+b.linear <- -0.024064
 
+a.logical <- 0.69207
+b.logical <- -0.53926
+
+lm <- function(pk){a.linear + b.linear * pk}
+logic <- function(pk){exp(a.logical + b.logical * pk) / (1 + exp(a.logical + b.logical * pk))}
+df.pk |> ggplot(aes(x = K, y = pk)) + 
+  geom_point(size = 1.5, color = "gray") +
+  stat_function(fun = lm, col = "salmon", linewidth = 1) +
+  stat_function(fun = logic, col = "steelblue", linewidth = 1) +
+  theme_minimal()+
+  labs(x = "k: Number of doctor's contacts prescribing before this month", 
+       y = TeX("$p_k$"), title = "Linear vs. Logistic Models") +
+  theme(
+  plot.title = element_text(hjust = 0.5)
+  )
 ```
 
+  - I favor the logistic model due to its significantly better fit with the empirical data.
+
+\newpage
 _For quibblers, pedants, and idle hands itching for work to do_: The $p_k$ values from problem 3 aren't all equally precise, because they come from different numbers of observations.  Also, if each doctor with $k$ adoptee contacts is independently deciding whether or not to adopt with probability $p_k$, then the variance in the number of adoptees will depend on $p_k$.  Say that the actual proportion who decide to adopt is $\hat{p}_k$.  A little probability (exercise!) shows that in this situation, $\mathbb{E}[\hat{p}_k] = p_k$, but that $\mathrm{Var}[\hat{p}_k] = p_k(1-p_k)/n_k$, where $n_k$ is the number of doctors in that situation.  (We estimate probabilities more precisely when they're really extreme [close to 0 or 1], and/or we have lots of observations.)  We can estimate that variance as $\hat{V}_k = \hat{p}_k(1-\hat{p}_k)/n_k$.  Find the $\hat{V}_k$, and then re-do the estimation in (4a) and (4b) where the squared error for $p_k$ is divided by $\hat{V}_k$.  How much do the parameter estimates change?  How much do the plotted curves in (4c) change?
+
+- While the variance-weighted approach would indeed provide more precise estimates, I must defer this analysis due to time constraints. The current unweighted models serve as reasonable first approximations given these limitations.
